@@ -91,7 +91,7 @@ class Application(tk.Frame):
             tk.Label(newWindow, text="", bg=bgColor, fg=fgColor, font=tkFont.Font(size=20)).pack(side="bottom")
 
             # Favorite
-            tk.Button(newWindow, text="Favorite", width=60, height=3).pack(side="bottom")
+            tk.Button(newWindow, text="Favorite", width=60, height=3, command=lambda:self.favorite(charity[12])).pack(side="bottom")
 
             # Bottom Spacing
             tk.Label(newWindow, text="", bg=bgColor, fg=fgColor, font=tkFont.Font(size=20)).pack(side="bottom")
@@ -99,6 +99,15 @@ class Application(tk.Frame):
 
         except:
             pass
+
+    def favorite(self, EIN):
+        sql = "INSERT INTO lt(EIN, iduser) VALUES (" + str(EIN) + ", " + str(currUser) + ")"
+        mycursor.execute(sql)
+
+        confirmWindow = tk.Toplevel(bg=bgColor)
+        tk.Message(confirmWindow, text="Successfully Favorited!", width=100, bg=bgColor, fg=fgColor, justify=tk.CENTER, font=tkFont.Font(size=12)).pack(side="top")
+        tk.Button(confirmWindow, text="Close", command=lambda: confirmWindow.destroy()).pack(side="top")
+
 
     def createBackButton(self, frame, scene):
         backButton = tk.Button(frame, text="Back", command=lambda: self.switchScene(scene))
@@ -223,31 +232,30 @@ class homeScene(tk.Frame):
 
             # High Transparency Charities
             if fac2.get() == True:
-                whereClause += " ascore > 50"
+                whereClause += " ascore > 87.9"
                 factorCount -= 1
                 if factorCount > 0:
                     whereClause += " AND "
 
             # Low Financial Health Charities
             if fac3.get() == True:
-                whereClause += " fscore < 50"
+                whereClause += " fscore < 81.82"
                 factorCount -= 1
                 if factorCount > 0:
                     whereClause += " AND "
 
             # High Rated Charities
             if fac4.get() == True:
-                whereClause += " score > 50"
+                whereClause += " score > 85.34"
                 factorCount -= 1
                 if factorCount > 0:
                     whereClause += " AND "
 
             # Highly Expense Charities
             if fac5.get() == True:
-                whereClause += " tot_exp > 50"
+                whereClause += " tot_exp > 14436565"
 
-            sql = "SELECT name, motto, description, score, category, subcategory, Website, Facebook, Twitter, Address, city, state FROM charnavandusachar WHERE category = " + "'" + selected.get() + "'" + whereClause
-            print(sql)
+            sql = "SELECT name, motto, description, score, category, subcategory, Website, Facebook, Twitter, Address, city, state, EIN FROM charnavandusachar WHERE category = " + "'" + selected.get() + "'" + whereClause
             mycursor.execute(sql)
             result2 = mycursor.fetchall()
 
@@ -689,29 +697,27 @@ class resultScene(tk.Frame):
                     whereClause += " AND "
 
             elif (x == 10 and settings[0][x] == 1):  # ascore
-                whereClause += " ascore > 90.79 "
+                whereClause += " ascore > 87.9 "
                 numberOfFactors -= 1
                 if numberOfFactors != 0:
                     whereClause += " AND "
 
             elif (x == 11 and settings[0][x] == 1):  # fscore
-                whereClause += " fscore < 41242.29 "
+                whereClause += " fscore < 81.82 "
                 numberOfFactors -= 1
                 if numberOfFactors != 0:
                     whereClause += " AND "
 
             elif (x == 12 and settings[0][x] == 1):  # score
-                whereClause += " score > 50 "
+                whereClause += " score > 85.34 "
                 numberOfFactors -= 1
                 if numberOfFactors != 0:
                     whereClause += " AND "
 
             elif (x == 13 and settings[0][x] == 1):  # tot_exp
-                whereClause += " tot_exp > 50 "
+                whereClause += " tot_exp > 14436565 "
 
-        sql = "SELECT name, motto, description, score, category, subcategory, Website, Facebook, Twitter, Address, city, state FROM charnavandusachar " + whereClause
-        print(sql)
-
+        sql = "SELECT name, motto, description, score, category, subcategory, Website, Facebook, Twitter, Address, city, state, EIN FROM charnavandusachar " + whereClause
 
         mycursor.execute(sql)
         result = mycursor.fetchall()
@@ -733,7 +739,7 @@ class resultScene(tk.Frame):
         tk.Message(frame, text="My Matches", bg=bgColor, width=200, font=tkFont.Font(size=16)).pack(side="top")
 
         # Details Button
-        details = tk.Button(frame, text="Details", font=tkFont.Font(size=16), command=lambda: self.master.displayDetails(result[charityList.curselection()[0]]))
+        details = tk.Button(frame, text="Details", command=lambda: self.master.displayDetails(result[charityList.curselection()[0]]))
         details.place(relx=.825, rely=.45, relw=.15, relh=.1)
         self.master.createBackButton(frame, homeScene)
 
@@ -761,12 +767,40 @@ class accountScene(tk.Frame):
         tk.Message(frame, text="My Charities: ", bg=bgColor, fg=fgColor, width=900, font=tkFont.Font(size=12), justify=tk.LEFT).place(relx=.45, rely=.45)
         self.master.createBackButton(frame, homeScene)
         charityList = tk.Listbox(frame, width=60, selectmode=tk.SINGLE, font=tkFont.Font(size=12), justify=tk.LEFT)
+
+        sql = "SELECT name, motto, description, score, category, subcategory, Website, Facebook, Twitter, Address, city, state, m.EIN FROM charnavandusachar JOIN (SELECT EIN FROM lt WHERE iduser = " + str(currUser) + ") as m ON charnavandusachar.EIN = m.EIN"
+
+        mycursor.execute(sql)
+        result = mycursor.fetchall()
+
+        for x in result:
+            charityList.insert(tk.END, x[0])
+
         charityList.place(relx=.1, rely=.5, relw=.8, relh=.3)
+
+        scrollBar = tk.Scrollbar(charityList)
+        charityList.config(yscrollcommand=scrollBar.set)
+        scrollBar.pack(side="right", fill="y")
+        scrollBar.config(command=charityList.yview)
 
         # Buttons
         resetButton = tk.Button(frame, text="Reset Preferences", command=lambda: self.master.switchScene(primaryScene))
         resetButton.place(relx=.79, rely=0.025, relw=.2, relh=.1)
-        #details = tk.Button(frame, text="Details", )
+        details = tk.Button(frame, text="Details", command=lambda: self.master.displayDetails(result[charityList.curselection()[0]]))
+        details.place(relx=.3, rely=.85, relw=.2, relh=.1)
+        removeButton = tk.Button(frame, text="Remove Favorite", command=lambda: self.removeFavorite(result[charityList.curselection()[0]][12]))
+        removeButton.place(relx=.5, rely=.85, relw=.2, relh=.1)
+
+    def removeFavorite(self, EIN):
+        sql = "DELETE FROM lt WHERE iduser = " + str(currUser) + " AND EIN =" + str(EIN)
+        print(sql)
+        mycursor.execute(sql)
+
+        confirmWindow = tk.Toplevel(bg=bgColor)
+        tk.Message(confirmWindow, text="Successfully Unfavorited!", width=100, bg=bgColor, fg=fgColor, justify=tk.CENTER, font=tkFont.Font(size=12)).pack(side="top")
+        tk.Button(confirmWindow, text="Close", command=lambda: confirmWindow.destroy()).pack(side="top")
+
+        self.master.switchScene(accountScene)
 
 
 app = Application(master=root)
