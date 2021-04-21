@@ -68,18 +68,15 @@ class Application(tk.Frame):
 
             # Website
             if len(charity[6]) > 1:
-                website = tk.Message(newWindow, text="Website", bg=bgColor, fg="blue", cursor="hand2", justify=tk.LEFT).pack(side="top")
-                website.bind("<Button-1>", lambda e: webbrowser.open_new(charity[6]))
+                website = tk.Message(newWindow, text="Website: " + charity[6], bg=bgColor, fg=fgColor, width=900, font=tkFont.Font(size=12), justify=tk.LEFT).pack(side="top")
 
             # Facebook
             if len(charity[7]) > 1:
-                facebook = tk.Message(newWindow, text="Facebook", bg=bgColor, fg="blue", cursor="hand2", justify=tk.LEFT).pack(side="top")
-                facebook.bind("<Button-1>", lambda e: webbrowser.open_new(charity[7]))
+                facebook = tk.Message(newWindow, text="Facebook", bg=bgColor, fg=fgColor, font=tkFont.Font(size=12), width=900, justify=tk.LEFT).pack(side="top")
 
             # Twitter
             if len(charity[8]) > 1:
-                twitter = tk.Message(newWindow, text="Twitter", bg=bgColor, fg="blue", cursor="hand2", justify=tk.LEFT).pack(side="top")
-                twitter.bind("<Button-1>", lambda e: webbrowser.open_new(charity[8]))
+                twitter = tk.Message(newWindow, text="Twitter", bg=bgColor, fg=fgColor, width=900, font=tkFont.Font(size=12), justify=tk.LEFT).pack(side="top")
 
             # Address | City
             tk.Message(newWindow, text="Location: " + charity[9] + ", " + charity[10] + ", " + charity[11], bg=bgColor, fg=fgColor, width=900, font=tkFont.Font(size=12), justify=tk.LEFT).pack(side="top")
@@ -250,6 +247,7 @@ class homeScene(tk.Frame):
                 whereClause += " tot_exp > 50"
 
             sql = "SELECT name, motto, description, score, category, subcategory, Website, Facebook, Twitter, Address, city, state FROM charnavandusachar WHERE category = " + "'" + selected.get() + "'" + whereClause
+            print(sql)
             mycursor.execute(sql)
             result2 = mycursor.fetchall()
 
@@ -450,13 +448,13 @@ class primaryScene(tk.Frame):
         # Human Service
         human = tk.BooleanVar()
         human.set(False)
-        box1 = tk.Checkbutton(frame, text="Human", bg=bgColor, fg=fgColor, selectcolor="black", variable=human)
+        box1 = tk.Checkbutton(frame, text="Human Services", bg=bgColor, fg=fgColor, selectcolor="black", variable=human)
         box1.grid(column=0, row=2, sticky='nsew')
 
         # Arts and Culture
         arts = tk.BooleanVar()
         arts.set(False)
-        box2 = tk.Checkbutton(frame, text="Arts", bg=bgColor, fg=fgColor, selectcolor="black", variable=arts)
+        box2 = tk.Checkbutton(frame, text="Arts and Culture", bg=bgColor, fg=fgColor, selectcolor="black", variable=arts)
         box2.grid(column=1, row=2, sticky='nsew')
 
         # Health
@@ -468,7 +466,7 @@ class primaryScene(tk.Frame):
         # Community Development
         community = tk.BooleanVar()
         community.set(False)
-        box4 = tk.Checkbutton(frame, text="Community", bg=bgColor, fg=fgColor, selectcolor="black", variable=community)
+        box4 = tk.Checkbutton(frame, text="Community Development", bg=bgColor, fg=fgColor, selectcolor="black", variable=community)
         box4.grid(column=0, row=3, sticky='nsew')
 
         # Education
@@ -654,7 +652,7 @@ class resultScene(tk.Frame):
                         whereClause += ","
 
                 elif (x == 5 and settings[0][x] == 1):
-                    whereClause += " 'Internatinal'"
+                    whereClause += " 'International'"
                     numberOfCat -= 1
                     if numberOfCat != 0:
                         whereClause += ","
@@ -691,13 +689,13 @@ class resultScene(tk.Frame):
                     whereClause += " AND "
 
             elif (x == 10 and settings[0][x] == 1):  # ascore
-                whereClause += " ascore > 50 "
+                whereClause += " ascore > 90.79 "
                 numberOfFactors -= 1
                 if numberOfFactors != 0:
                     whereClause += " AND "
 
             elif (x == 11 and settings[0][x] == 1):  # fscore
-                whereClause += " fscore < 50 "
+                whereClause += " fscore < 41242.29 "
                 numberOfFactors -= 1
                 if numberOfFactors != 0:
                     whereClause += " AND "
@@ -712,6 +710,7 @@ class resultScene(tk.Frame):
                 whereClause += " tot_exp > 50 "
 
         sql = "SELECT name, motto, description, score, category, subcategory, Website, Facebook, Twitter, Address, city, state FROM charnavandusachar " + whereClause
+        print(sql)
 
 
         mycursor.execute(sql)
@@ -759,10 +758,14 @@ class accountScene(tk.Frame):
         tk.Message(frame, text="Name: " + info[0][0], bg=bgColor, fg=fgColor, width=900, font=tkFont.Font(size=12), justify=tk.LEFT).pack(side="top")
         tk.Message(frame, text="Email: " + info[0][1], bg=bgColor, fg=fgColor, width=900, font=tkFont.Font(size=12), justify=tk.LEFT).pack(side="top")
         tk.Message(frame, text="Address: " + info[0][2], bg=bgColor, fg=fgColor, width=900, font=tkFont.Font(size=12), justify=tk.LEFT).pack(side="top")
-        tk.Message(frame, text="My Charities: ", bg=bgColor, fg=fgColor, width=900, font=tkFont.Font(size=12), justify=tk.LEFT).place(relx=.4, rely=.45)
+        tk.Message(frame, text="My Charities: ", bg=bgColor, fg=fgColor, width=900, font=tkFont.Font(size=12), justify=tk.LEFT).place(relx=.45, rely=.45)
         self.master.createBackButton(frame, homeScene)
         charityList = tk.Listbox(frame, width=60, selectmode=tk.SINGLE, font=tkFont.Font(size=12), justify=tk.LEFT)
         charityList.place(relx=.1, rely=.5, relw=.8, relh=.3)
+
+        # Buttons
+        resetButton = tk.Button(frame, text="Reset Preferences", command=lambda: self.master.switchScene(primaryScene))
+        resetButton.place(relx=.79, rely=0.025, relw=.2, relh=.1)
         #details = tk.Button(frame, text="Details", )
 
 
