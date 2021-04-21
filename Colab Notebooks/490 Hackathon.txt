@@ -1,0 +1,45 @@
+ICP 10:
+
+	*DataFrame creation through the sqlContext.
+	 	- sqlContext.read.option("header", "true").load('/content/drive/MyDrive/HackAThon2021/Data/Kaggle USA Charities Data/*.csv', 'csv')
+		- I used the wildcard * to load all of the csv for each state
+	
+	*Dataframe creation through the sqlContext
+		- sqlContext.read.option("header", "true").load('/content/drive/MyDrive/HackAThon2021/Data/Charity Navigator Scores Expenses Dataset/CLEAN_charity_data.csv', 'csv')
+
+	*Performed Transformation and Actions on two of our datasets.
+		- Normalized the EIN on both field on both datasets
+		- df.withColumn('EIN', regexp_replace("EIN", "[^0-9]", ""))
+		- df2.withColumn('ein', regexp_replace("EIN", "[^0-9]", ""))
+
+		- new_df.drop('Name', 'Category', 'State') * Drop these columns so we don't have repeated columns.
+
+		- Joined the two datasets on the EIN
+		- new_df.join(new_df2, on=['EIN'], how='inner')
+
+		- result.write.option("header", "true").csv("/content/drive/MyDrive/HackAThon2021/Data/CharityNavAndUSACharities") * Write out to csv for mySQL import
+
+		- temp = result.groupBy(["category"]).count() * Look at the top 9 categories, these 9 will be the main categories that a user can select
+		- temp.sort(F.col("count").desc()).limit(9).show()
+
+	*Temporary Table creation through the sqlContext.
+		- result.registerTempTable("resultTemp")
+
+	*Performed SQL queries for factors though the sql() of the sqlContext. This is for our factors 
+		- sqlContext.sql("SELECT * FROM resultTemp WHERE size = 'small'")
+
+		- sqlContext.sql("SELECT AVG(ascore) as averge FROM resultTemp WHERE ascore < 100")
+		- avg_ascore_num = avg_ascore.collect()[0][0] *Collect Action to get the average expense. Shouldn't be costly since there is only one cell
+		- sqlContext.sql("SELECT * FROM resultTemp WHERE ascore > " + str(avg_ascore_num)) *Anything above our avergae is considered
+
+		- avg_fscore = sqlContext.sql("SELECT AVG(fscore) as averge FROM resultTemp WHERE fscore < 100")
+		- avg_fscore_num = avg_fscore.collect()[0][0] *Collect Action to get the average expense. Shouldn't be costly since there is only one cell
+		- lowFanHealth = sqlContext.sql("SELECT * FROM resultTemp WHERE fscore < " + str(avg_fscore_num)) *Anything below our averge is considered
+
+		- avg_score = sqlContext.sql("SELECT AVG(score) as average FROM resultTemp WHERE score < 100" )
+		- avg_score_num = avg_score.collect()[0][0] *Collect Action to get the average expense. Shouldn't be costly since there is only one cell
+		- sqlContext.sql("SELECT * FROM resultTemp WHERE score > " + str(avg_score_num)) *Anything above our averge is considered
+
+		- avg_expense = sqlContext.sql("SELECT AVG(tot_exp) as averge FROM resultTemp")
+		- avg_expense_num = avg_expense.collect()[0][0] *Collect Action to get the average expense. Shouldn't be costly since there is only one cell
+		- sqlContext.sql("SELECT * FROM resultTemp WHERE tot_exp > " + str(avg_expense_num)) *Anything above our averge is considered
